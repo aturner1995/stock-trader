@@ -1,0 +1,13 @@
+a {
+    color: white !important;
+}
+
+body {
+    background-color: black;
+    color: white;
+}
+
+.navbar-toggler, .navbar-toggler-icon {
+    color: limegreen !important;
+    background-color: limegreen;
+}
