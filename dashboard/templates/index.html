@@ -2,13 +2,5 @@
 
 {% block content %}
 
-<h1>Stock</h1>
-<div class="row">
-    <form action="/dashboard/" method="post">
-        {% csrf_token %}
-        {{ form }}
-        <input type="submit" value="submit">
-    </form>
-</div>
 
 {% endblock %}

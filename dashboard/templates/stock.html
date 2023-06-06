@@ -8,9 +8,28 @@
     <div class="row">
         {{ plot_data | safe }}
     </div>
-    <p>Open: {{ prices.open }}</p>
-    <p>High: {{ prices.high }}</p>
-    <p>Low: {{ prices.low }}</p>
+    <div class="button-container">
+        <form class="m-1" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="stock" value="{{ stock }}">
+            <button type="submit" name="time_period" value="1D">1D</button>
+        </form>
+        <form class="m-1" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="stock" value="{{ stock }}">
+            <button type="submit" name="time_period" value="1W">1W</button>
+        </form>
+        <form class="m-1" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="stock" value="{{ stock }}">
+            <button type="submit" name="time_period" value="1M">1M</button>
+        </form>
+        <form class="m-1" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="stock" value="{{ stock }}">
+            <button type="submit" name="time_period" value="1Y">1Y</button>
+        </form>
+    </div>
 </div>
 
 <div class="row">
@@ -20,7 +39,7 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">{{ item.headline }}</h5>
-                <p class="card-text">Author: {{ item.author }}</p>
+                <p class="card-text">{{ item.author }}</p>
                 <a href="{{ item.url }}" class="btn btn-primary">Read More</a>
             </div>
         </div>

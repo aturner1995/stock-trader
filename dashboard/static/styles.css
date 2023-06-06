@@ -18,3 +18,7 @@ body {
 .card-img-top, .img-col {
     height: 50px !important;
 }
+
+.button-container {
+    display: flex;
+}

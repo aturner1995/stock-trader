@@ -9,17 +9,27 @@ def index(request):
     if request.method == 'POST':
         form = StockForm(request.POST)
         if form.is_valid():
-            stock = request.POST['stock']
+            stock = form.cleaned_data['stock']
             return HttpResponseRedirect(stock)
     else:
         form = StockForm()
-        return render(request, 'index.html', {'form' : form})
+    
+    return render(request, 'index.html', {'form': form})
+
 
 def stock(request, id):
     context = {}
     context['stock'] = id
-    close_prices, timestamps = get_stock_data(id)
+
+    form = StockForm(request.POST or None)
+    if form.is_valid():
+        time_period = form.cleaned_data['time_period']
+        close_prices, timestamps = get_stock_data(id, time_period)
+    else:
+        close_prices, timestamps = get_stock_data(id, '1D')  # Default time period is 1D
+
     context['news'] = get_stock_news(id)
+    context['form'] = form
 
     # Calculate price change and percentage change from open to current price
     open_price = close_prices[0]
@@ -44,7 +54,6 @@ def stock(request, id):
     context['plot_data'] = plot_data
 
     return render(request, 'stock.html', context)
-
 
 
 
