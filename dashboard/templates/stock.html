@@ -2,10 +2,19 @@
 
 {% block content %}
 
-<h1>Stock</h1>
 <div class="row">
-    <h1>{{ meta.name }}</h1>
-    <p>Description: {{ meta.description }}</p>
+    <h1>{{ stock }}</h1>
+    <!-- Add the plot -->
+    <div class="row">
+        {{ plot_data | safe }}
+    </div>
+    <p>Open: {{ prices.open }}</p>
+    <p>High: {{ prices.high }}</p>
+    <p>Low: {{ prices.low }}</p>
+</div>
+
+<div class="row">
+    <h2>News</h2>
 </div>
 
 {% endblock %}

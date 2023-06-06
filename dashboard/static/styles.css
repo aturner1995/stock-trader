@@ -8,6 +8,9 @@ body {
 }
 
 .navbar-toggler, .navbar-toggler-icon {
-    color: limegreen !important;
-    background-color: limegreen;
+   border-color: white !important;
+}
+
+.nav-img {
+    height: 50px !important;
 }
