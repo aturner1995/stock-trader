@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from .forms import StockForm
-from .fetchData import get_stock_data
+from .fetchData import get_stock_data, get_stock_news
 import plotly.graph_objs as go
 import plotly.io as pio
 
@@ -19,6 +19,7 @@ def stock(request, id):
     context = {}
     context['stock'] = id
     close_prices, timestamps = get_stock_data(id)
+    context['news'] = get_stock_news(id)
 
     # Calculate price change and percentage change from open to current price
     open_price = close_prices[0]
@@ -29,13 +30,15 @@ def stock(request, id):
     # Create the plot using Plotly
     formatted_price_change = round(price_change, 2)
     formatted_percentage_change = round(percentage_change, 2)
-    subtitle = f'Up ${formatted_price_change} ({formatted_percentage_change}%) past day'
+    if price_change > 0:
+        subtitle = f'Up ${formatted_price_change} ({formatted_percentage_change}%)'
+    else:
+        subtitle = f'Down ${formatted_price_change} ({formatted_percentage_change}%)'
     fig = go.Figure(data=go.Scatter(x=timestamps, y=close_prices))
     fig.update_layout(
         title={'text': f'${round(current_price, 2)}', 'y': 0.9, 'x': 0, 'xref': 'paper', 'yanchor': 'top'},
         annotations=[{'text': subtitle, 'showarrow': False, 'xref': 'paper', 'yref': 'paper', 'x': 0, 'y': 1.15, 'font': {'size': 14}}],
     )
-
     # Convert the plot to HTML and pass it to the template
     plot_data = pio.to_html(fig, full_html=False)
     context['plot_data'] = plot_data

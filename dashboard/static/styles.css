@@ -14,3 +14,7 @@ body {
 .nav-img {
     height: 50px !important;
 }
+
+.card-img-top, .img-col {
+    height: 50px !important;
+}

@@ -15,6 +15,17 @@
 
 <div class="row">
     <h2>News</h2>
+    {% for item in news.news %}
+    <div class="col-md-12 my-2">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ item.headline }}</h5>
+                <p class="card-text">Author: {{ item.author }}</p>
+                <a href="{{ item.url }}" class="btn btn-primary">Read More</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 
 {% endblock %}
