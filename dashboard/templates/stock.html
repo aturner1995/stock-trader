@@ -12,22 +12,22 @@
         <form class="m-1" method="POST">
             {% csrf_token %}
             <input type="hidden" name="stock" value="{{ stock }}">
-            <button type="submit" name="time_period" value="1D">1D</button>
+            <button type="submit" name="time_period" value="1D" class="btn btn-light">1D</button>
         </form>
         <form class="m-1" method="POST">
             {% csrf_token %}
             <input type="hidden" name="stock" value="{{ stock }}">
-            <button type="submit" name="time_period" value="1W">1W</button>
+            <button type="submit" name="time_period" value="1W" class="btn btn-light">1W</button>
         </form>
         <form class="m-1" method="POST">
             {% csrf_token %}
             <input type="hidden" name="stock" value="{{ stock }}">
-            <button type="submit" name="time_period" value="1M">1M</button>
+            <button type="submit" name="time_period" value="1M" class="btn btn-light">1M</button>
         </form>
         <form class="m-1" method="POST">
             {% csrf_token %}
             <input type="hidden" name="stock" value="{{ stock }}">
-            <button type="submit" name="time_period" value="1Y">1Y</button>
+            <button type="submit" name="time_period" value="1Y" class="btn btn-light">1Y</button>
         </form>
     </div>
 </div>
@@ -40,7 +40,7 @@
             <div class="card-body">
                 <h5 class="card-title">{{ item.headline }}</h5>
                 <p class="card-text">{{ item.author }}</p>
-                <a href="{{ item.url }}" class="btn btn-primary">Read More</a>
+                <a href="{{ item.url }}" class="btn btn-primary" target="_blank">Read More</a>
             </div>
         </div>
     </div>

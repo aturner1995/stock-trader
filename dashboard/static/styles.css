@@ -1,7 +1,3 @@
-a {
-    color: white !important;
-}
-
 body {
     background-color: black;
     color: white;
@@ -21,4 +17,8 @@ body {
 
 .button-container {
     display: flex;
+}
+
+.helplist, .errorlist {
+    display: none;
 }
