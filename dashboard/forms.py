@@ -21,6 +21,10 @@ class StockForm(forms.Form):
         help_text=''
     )
 
+class BuyStockForm(forms.Form):
+    quantity = forms.IntegerField(label='Quantity')
+    stock_symbol = forms.CharField(widget=forms.HiddenInput())
+
 class NewUserForm(UserCreationForm):
 
     email = forms.EmailField(

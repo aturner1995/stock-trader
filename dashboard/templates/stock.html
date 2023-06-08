@@ -6,25 +6,42 @@
     <h1>{{ stock }}</h1>
     <!-- Add the plot -->
     <div class="row">
-        {{ plot_data | safe }}
-    </div>
+        <div class="col-md-8">
+          <!-- Plot -->
+          {{ plot_data|safe }}
+        </div>
+        <div class="col-md-4">
+          <!-- Stock Buying Form -->
+          <div class="card">
+            <div class="card-body text-center">
+              <h5 class="card-title">Buy {{ stock }} Stock</h5>
+              <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="stock_symbol" value="{{ stock }}">
+                {{ buystockform.as_p }}
+                <button type="submit" class="btn btn-primary">Buy</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>      
     <div class="button-container">
-        <form class="m-1" method="POST">
+        <form class="m-1">
             {% csrf_token %}
             <input type="hidden" name="stock" value="{{ stock }}">
             <button type="submit" name="time_period" value="1D" class="btn btn-light">1D</button>
         </form>
-        <form class="m-1" method="POST">
+        <form class="m-1">
             {% csrf_token %}
             <input type="hidden" name="stock" value="{{ stock }}">
             <button type="submit" name="time_period" value="1W" class="btn btn-light">1W</button>
         </form>
-        <form class="m-1" method="POST">
+        <form class="m-1">
             {% csrf_token %}
             <input type="hidden" name="stock" value="{{ stock }}">
             <button type="submit" name="time_period" value="1M" class="btn btn-light">1M</button>
         </form>
-        <form class="m-1" method="POST">
+        <form class="m-1">
             {% csrf_token %}
             <input type="hidden" name="stock" value="{{ stock }}">
             <button type="submit" name="time_period" value="1Y" class="btn btn-light">1Y</button>

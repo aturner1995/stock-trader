@@ -1,13 +1,15 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
-from .forms import StockForm, NewUserForm
-from .models import Profile
-from .fetchData import get_stock_data, get_stock_news
+from .forms import StockForm, NewUserForm, BuyStockForm
+from .models import Profile, Stock
+from .fetchData import get_stock_data, get_stock_news, get_current_stock_price
 import plotly.graph_objs as go
 import plotly.io as pio
+from django.urls import reverse
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
+from decimal import Decimal
 
 def index(request):
     if request.method == 'POST':
@@ -25,7 +27,7 @@ def register_request(request):
         form = NewUserForm(request.POST)
         if form.is_valid():
             user = form.save()
-            balance = 100,000
+            balance = 100000
             profile = Profile(user=user, balance=balance)
             profile.save()
             login(request, user)
@@ -58,20 +60,50 @@ def logout_request(request):
 	messages.info(request, "You have successfully logged out.") 
 	return redirect("index")
 
-def stock(request, id):
+def profile(request):
+    user = request.user
     context = {}
-    context['stock'] = id
 
-    form = StockForm(request.POST)
-    if form.is_valid():
-        time_period = form.cleaned_data['time_period']
-        close_prices, timestamps = get_stock_data(id, time_period)
+    context['profile'] = Profile.objects.get(user=user)
+    context['form'] = StockForm()
+
+    return render(request, 'profile.html', context)
+
+def stock(request, stock_symbol):
+    context = {}
+    context['stock'] = stock_symbol
+    close_prices = []
+
+    if request.method == 'POST':
+        form = BuyStockForm(request.POST, initial={'stock_symbol': stock_symbol})
+        close_prices, timestamps = get_stock_data(stock_symbol, '1D')
+        if form.is_valid():
+            # Process stock buying
+            user = request.user
+            quantity = form.cleaned_data['quantity']
+            price = Decimal(get_current_stock_price(stock_symbol)["trades"][stock_symbol]["p"])
+            total_price = price * Decimal(quantity)
+            print(user.profile.cash)
+            if user.profile.cash >= total_price:
+                user.profile.cash -= total_price
+                user.profile.save()
+                transaction = Stock(user=user, symbol=stock_symbol, quantity=quantity, purchase_price=price)
+                transaction.save()
+                messages.success(request, f"You bought {quantity} shares of {stock_symbol} successfully.")
+            else:
+                messages.error(request, "Insufficient balance to make the purchase.")
     else:
-        close_prices, timestamps = get_stock_data(id, '1D')  # Default time period is 1D
+        form = StockForm()
+        time_period = request.GET.get('time_period')
+        if time_period:
+            close_prices, timestamps = get_stock_data(stock_symbol, time_period)
+        else:
+            # Default time period is 1D
+            close_prices, timestamps = get_stock_data(stock_symbol, '1D')
 
-    context['news'] = get_stock_news(id)
+    context['news'] = get_stock_news(stock_symbol)
     context['form'] = form
-
+    context['buystockform'] = BuyStockForm(initial={'stock_symbol': stock_symbol})
     # Calculate price change and percentage change from open to current price
     if close_prices:
         open_price = close_prices[0]
@@ -96,6 +128,3 @@ def stock(request, id):
         context['plot_data'] = plot_data
 
     return render(request, 'stock.html', context)
-
-
-

@@ -6,6 +6,12 @@ load_dotenv()  # take environment variables from .env.
 
 config = dotenv_values(".env")
 
+headers = {
+        "accept": "application/json",
+        "APCA-API-KEY-ID": config['APCA-API-KEY-ID'],
+        "APCA-API-SECRET-KEY": config['APCA-API-SECRET-KEY']
+}
+
 def get_stock_data(stock, time_period):
     # If else statement to check the time period and 
     if time_period == '1D':
@@ -25,11 +31,6 @@ def get_stock_data(stock, time_period):
 
     formatted_start = start.strftime('%Y-%m-%d')    
     url = "https://data.alpaca.markets/v2/stocks/bars?symbols={}&start={}&timeframe={}&limit=1000&adjustment=raw".format(stock, formatted_start, timeframe)
-    headers = {
-        "accept": "application/json",
-        "APCA-API-KEY-ID": config['APCA-API-KEY-ID'],
-        "APCA-API-SECRET-KEY": config['APCA-API-SECRET-KEY']
-    }
 
     response = requests.get(url, headers=headers)
     data = response.json()
@@ -48,10 +49,11 @@ def get_stock_data(stock, time_period):
 
 def get_stock_news(stock):
     url = "https://data.alpaca.markets/v1beta1/news?symbols={}".format(stock)
-    headers = {
-        "accept": "application/json",
-        "APCA-API-KEY-ID": config['APCA-API-KEY-ID'],
-        "APCA-API-SECRET-KEY": config['APCA-API-SECRET-KEY']
-    }
+    response = requests.get(url, headers=headers)
+    return response.json()
+
+
+def get_current_stock_price(stock):
+    url = "https://data.alpaca.markets/v2/stocks/trades/latest?symbols={}".format(stock)
     response = requests.get(url, headers=headers)
     return response.json()

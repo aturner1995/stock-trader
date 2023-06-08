@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Profile</h1>
+
+<h2>Username: {{ profile.user.username }}</h2>
+<h3>Cash Balance: ${{ profile.cash }}</h3>
+
+<h3>Purchased Stocks:</h3>
+<ul>
+  {% for stock in profile.user.stock_set.all %}
+    <li>{{ stock.symbol }} - Quantity: {{ stock.quantity }} - Purchase Price: ${{ stock.purchase_price }}</li>
+  {% endfor %}
+</ul>
+
+{% endblock %}
