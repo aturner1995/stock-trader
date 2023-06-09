@@ -128,3 +128,30 @@ def stock(request, stock_symbol):
         context['plot_data'] = plot_data
 
     return render(request, 'stock.html', context)
+
+
+def sell_stock(request, stock_id):
+    stock = Stock.objects.get(pk=stock_id)
+
+    if request.method == 'POST':
+        quantity = int(request.POST['quantity'])
+        if quantity > 0 and quantity <= stock.quantity:
+            price = Decimal(get_current_stock_price(stock.symbol)["trades"][stock.symbol]["p"])
+            total_price = price * Decimal(quantity)
+
+            # Update user balance
+            user = request.user
+            user.profile.cash += total_price
+            user.profile.save()
+
+            # Update stock record
+            stock.quantity -= quantity
+            stock.save()
+
+            messages.success(request, f"You sold {quantity} shares of {stock.symbol} successfully.")
+            return redirect('profile')
+        else:
+            messages.error(request, "Invalid quantity or insufficient shares for selling.")
+
+    return render(request, 'sell_stock.html', {'stock': stock})
+     
