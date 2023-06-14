@@ -3,16 +3,46 @@
 {% block content %}
 
 <h1>Hi, {{ profile.user.username }}!</h1>
-<h3>Cash Balance: ${{ profile.cash }}</h3>
-
-<h2>Purchased Stocks:</h2>
-<ul>
-  {% for stock in profile.user.stock_set.all %}
-  <li>
-    {{ stock.symbol }} - {{ stock.quantity }} shares
-    (<a href="{% url 'sell_stock' stock.id %}">Sell</a>)
-  </li>
-  {% endfor %}
-</ul>
+<h3>Balance: ${{ total_value }}</h3>
+<h3>Available Cash: ${{ profile.cash }}</h3>
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <h3 class="my-3 mx-3">My Portfolio:</h3>
+      <div class="row m-3">
+        {% for stock in stocks %}
+        <div class="col">
+          <a class="card stock-card" href="{% url 'stock' stock.symbol %}">
+            <div class="card-body">
+              <h5 class="card-title">{{ stock.symbol }}</h5>
+              <p class="card-text">Current Price: ${{ stock.current_price }} ({{ stock.change }}%)</p>
+              <p class="card-text">Average Share Price: ${{ stock.average_purchase_price }}</p>
+              <p class="card-text">Number of Shares: {{ stock.quantity }}</p>
+              <p class="card-text">Total Value: ${{ stock.value }}</p>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <h3 class="my-3 mx-3">Watch List:</h3>
+      <div class="row m-3">
+        {% for stock in watch %}
+        <div class="col">
+          <a href="{% url 'stock' stock.symbol %}" class="card stock-card">
+            <div class="card-body">
+              <h5>{{ stock.symbol }}</h5>
+              <p>${{ stock.current_price }}</p>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

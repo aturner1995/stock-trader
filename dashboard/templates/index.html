@@ -1,5 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
+<div class="hero-image">
+    <div class="text-center">
+        <h1>BULLSEYE TRACKER</h1>
+        <h2>Elevate Your Paper Trading Game</h2>
+        <div class="text-center my-3">
+            {% if user.is_authenticated %}
+            <a class="btn btn-light" href="/profile/">View Account</a>
+            {% else %}
+            <a class="btn btn-light" href="/login/">Create Account</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}

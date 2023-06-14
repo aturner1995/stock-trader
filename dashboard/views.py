@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from .forms import StockForm, NewUserForm, BuyStockForm
-from .models import Profile, Stock
+from .models import Profile, Stock, Transaction, WatchlistStock
 from .fetchData import get_stock_data, get_stock_news, get_current_stock_price
 import plotly.graph_objs as go
 import plotly.io as pio
@@ -64,8 +64,28 @@ def profile(request):
     user = request.user
     context = {}
 
-    context['profile'] = Profile.objects.get(user=user)
+    profile = Profile.objects.get(user=user)
+    context['profile'] = profile
+    total_value = profile.cash
+
+    stocks = profile.user.stock_set.all()
+    watchlist = profile.watchlist.all()
+
+    for stock in stocks:
+        current_price = get_current_stock_price(stock.symbol)
+        stock.current_price = round(current_price["trades"][stock.symbol]["p"],2)
+        stock.change = round((Decimal(stock.current_price) - (stock.average_purchase_price))/(stock.average_purchase_price)*100, 2)
+        stock.value = round(stock.current_price * stock.quantity, 2)
+        total_value += Decimal(stock.value)
+
+    for stock in watchlist:
+        current_price = get_current_stock_price(stock.symbol)
+        stock.current_price = round(current_price["trades"][stock.symbol]["p"],2)
+    
+    context['stocks'] = stocks
+    context['watch'] = watchlist
     context['form'] = StockForm()
+    context['total_value'] = round(total_value, 2)
 
     return render(request, 'profile.html', context)
 
@@ -73,23 +93,35 @@ def stock(request, stock_symbol):
     context = {}
     context['stock'] = stock_symbol
     close_prices = []
+    user = request.user
+    existing_stock = Stock.objects.filter(user=user, symbol=stock_symbol).first()
 
     if request.method == 'POST':
         form = BuyStockForm(request.POST, initial={'stock_symbol': stock_symbol})
         close_prices, timestamps = get_stock_data(stock_symbol, '1D')
         if form.is_valid():
             # Process stock buying
-            user = request.user
             quantity = form.cleaned_data['quantity']
             price = Decimal(get_current_stock_price(stock_symbol)["trades"][stock_symbol]["p"])
             total_price = price * Decimal(quantity)
-            print(user.profile.cash)
+                            
             if user.profile.cash >= total_price:
+                if existing_stock:
+                    total_cost = existing_stock.average_purchase_price * existing_stock.quantity
+                    total_cost += total_price
+                    existing_stock.quantity += quantity
+                    existing_stock.average_purchase_price = total_cost / existing_stock.quantity
+                    existing_stock.save()
+                else:
+                    purchase = Stock(user=user, symbol=stock_symbol, quantity=quantity, average_purchase_price=price)
+                    purchase.save()
+                
+                transaction = Transaction(stock=existing_stock or purchase, stock_symbol=stock_symbol, quantity=quantity, purchase_price=price, purchase=True)
+                transaction.save()
                 user.profile.cash -= total_price
                 user.profile.save()
-                transaction = Stock(user=user, symbol=stock_symbol, quantity=quantity, purchase_price=price)
-                transaction.save()
                 messages.success(request, f"You bought {quantity} shares of {stock_symbol} successfully.")
+
             else:
                 messages.error(request, "Insufficient balance to make the purchase.")
     else:
@@ -104,6 +136,10 @@ def stock(request, stock_symbol):
     context['news'] = get_stock_news(stock_symbol)
     context['form'] = form
     context['buystockform'] = BuyStockForm(initial={'stock_symbol': stock_symbol})
+    context['existing_stock'] = existing_stock
+    watchlist = Profile.objects.get(user=user).watchlist.all()
+    watchlist_symbols = [item.symbol for item in watchlist]
+    context['watchlist_symbols'] = watchlist_symbols
     # Calculate price change and percentage change from open to current price
     if close_prices:
         open_price = close_prices[0]
@@ -126,7 +162,7 @@ def stock(request, stock_symbol):
         # Convert the plot to HTML and pass it to the template
         plot_data = pio.to_html(fig, full_html=False)
         context['plot_data'] = plot_data
-
+    
     return render(request, 'stock.html', context)
 
 
@@ -143,10 +179,15 @@ def sell_stock(request, stock_id):
             user = request.user
             user.profile.cash += total_price
             user.profile.save()
+            transaction = Transaction(stock=stock, stock_symbol=stock.symbol, quantity=quantity, purchase_price=price, purchase=False)
+            transaction.save()
 
             # Update stock record
             stock.quantity -= quantity
-            stock.save()
+            if stock.quantity == 0:
+                stock.delete()
+            else:
+                stock.save()
 
             messages.success(request, f"You sold {quantity} shares of {stock.symbol} successfully.")
             return redirect('profile')
@@ -154,4 +195,19 @@ def sell_stock(request, stock_id):
             messages.error(request, "Invalid quantity or insufficient shares for selling.")
 
     return render(request, 'sell_stock.html', {'stock': stock})
+
      
+def watchlist_toggle(request, stock_symbol):
+    existing_stock = WatchlistStock.objects.filter(user=request.user, symbol=stock_symbol).first()
+    
+    if request.method == 'POST':       
+        profile = Profile.objects.get(user=request.user)
+
+        if existing_stock:
+            profile.watchlist.remove(existing_stock)
+            existing_stock.delete()
+        else:
+            watchlist_stock = WatchlistStock.objects.create(user=request.user, symbol=stock_symbol)
+            profile.watchlist.add(watchlist_stock)
+    
+    return redirect('stock', stock_symbol=stock_symbol)

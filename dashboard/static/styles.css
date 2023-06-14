@@ -3,15 +3,17 @@ body {
     color: white;
 }
 
-.navbar-toggler, .navbar-toggler-icon {
-   border-color: white !important;
+.navbar-toggler,
+.navbar-toggler-icon {
+    border-color: white !important;
 }
 
 .nav-img {
     height: 50px !important;
 }
 
-.card-img-top, .img-col {
+.card-img-top,
+.img-col {
     height: 50px !important;
 }
 
@@ -19,6 +21,24 @@ body {
     display: flex;
 }
 
-.helplist, .errorlist {
+.helplist,
+.errorlist {
     display: none;
+}
+
+.stock-card {
+    text-decoration: none !important;
+}
+
+.stock-card:hover {
+    border-color: black;
+}
+
+.hero-image {
+    background-image: url('hero2.png');
+    height: 80vh;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

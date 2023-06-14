@@ -3,65 +3,91 @@
 {% block content %}
 
 <div class="row">
-    <h1>{{ stock }}</h1>
-    <!-- Add the plot -->
-    <div class="row">
-        <div class="col-md-8">
-          <!-- Plot -->
-          {{ plot_data|safe }}
-        </div>
-        <div class="col-md-4">
-          <!-- Stock Buying Form -->
-          <div class="card">
-            <div class="card-body text-center">
-              <h5 class="card-title">Buy {{ stock }} Stock</h5>
-              <form method="POST">
-                {% csrf_token %}
-                <input type="hidden" name="stock_symbol" value="{{ stock }}">
-                {{ buystockform.as_p }}
-                <button type="submit" class="btn btn-primary">Buy</button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>      
-    <div class="button-container">
-        <form class="m-1">
-            {% csrf_token %}
-            <input type="hidden" name="stock" value="{{ stock }}">
-            <button type="submit" name="time_period" value="1D" class="btn btn-light">1D</button>
-        </form>
-        <form class="m-1">
-            {% csrf_token %}
-            <input type="hidden" name="stock" value="{{ stock }}">
-            <button type="submit" name="time_period" value="1W" class="btn btn-light">1W</button>
-        </form>
-        <form class="m-1">
-            {% csrf_token %}
-            <input type="hidden" name="stock" value="{{ stock }}">
-            <button type="submit" name="time_period" value="1M" class="btn btn-light">1M</button>
-        </form>
-        <form class="m-1">
-            {% csrf_token %}
-            <input type="hidden" name="stock" value="{{ stock }}">
-            <button type="submit" name="time_period" value="1Y" class="btn btn-light">1Y</button>
-        </form>
+  <h1>{{ stock }}
+    <form method="POST" action="{% url 'watchlist_toggle' stock %}" class="d-inline-block">
+      {% csrf_token %}
+      <input type="hidden" name="stock_id" value="{{ existing_stock.id }}">
+      {% if stock not in watchlist_symbols %}
+        <button type="submit" name="action" value="add" class="btn btn-success btn-sm">Add to Watchlist</button>
+      {% else %}
+        <button type="submit" name="action" value="remove" class="btn btn-warning btn-sm">Remove from Watchlist</button>
+      {% endif %}
+    </form>
+  </h1>  
+  
+  <!-- Add the plot -->
+  <div class="row">
+    <div class="col-md-8">
+      <!-- Plot -->
+      {{ plot_data|safe }}
     </div>
+    
+    <div class="col-md-4">
+      <!-- Stock Buying Form -->
+      <div class="card">
+        <div class="card-body text-center">
+          <h5 class="card-title">Buy {{ stock }} Stock</h5>
+          <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="stock_symbol" value="{{ stock }}">
+            {{ buystockform.as_p }}
+            <button type="submit" class="btn btn-primary">Buy</button>
+          </form>
+        </div>
+      </div>
+      {% if existing_stock.quantity > 0 %}
+      <div class="card mt-3">
+        <div class="card-body text-center">
+          <h5 class="card-title">Sell {{ stock }} Stock ({{ existing_stock.quantity }} shares)</h5>
+          <form method="POST" action="{% url 'sell_stock' existing_stock.id %}">
+            {% csrf_token %}
+            <label for="quantity">Quantity:</label>
+            <input type="number" name="quantity" id="quantity" min="1" max="{{ existing_stock.quantity }}" required>
+            <div class="text-center">
+              <button type="submit" class="btn btn-danger mt-3">Sell</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="button-container">
+    <form class="m-1">
+      {% csrf_token %}
+      <input type="hidden" name="stock" value="{{ stock }}">
+      <button type="submit" name="time_period" value="1D" class="btn btn-light">1D</button>
+    </form>
+    <form class="m-1">
+      {% csrf_token %}
+      <input type="hidden" name="stock" value="{{ stock }}">
+      <button type="submit" name="time_period" value="1W" class="btn btn-light">1W</button>
+    </form>
+    <form class="m-1">
+      {% csrf_token %}
+      <input type="hidden" name="stock" value="{{ stock }}">
+      <button type="submit" name="time_period" value="1M" class="btn btn-light">1M</button>
+    </form>
+    <form class="m-1">
+      {% csrf_token %}
+      <input type="hidden" name="stock" value="{{ stock }}">
+      <button type="submit" name="time_period" value="1Y" class="btn btn-light">1Y</button>
+    </form>
+  </div>
 </div>
-
 <div class="row">
-    <h2>News</h2>
-    {% for item in news.news %}
-    <div class="col-md-12 my-2">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">{{ item.headline }}</h5>
-                <p class="card-text">{{ item.author }}</p>
-                <a href="{{ item.url }}" class="btn btn-primary" target="_blank">Read More</a>
-            </div>
-        </div>
+  <h2>News</h2>
+  {% for item in news.news %}
+  <div class="col-md-12 my-2">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">{{ item.headline }}</h5>
+        <p class="card-text">{{ item.author }}</p>
+        <a href="{{ item.url }}" class="btn btn-primary" target="_blank">Read More</a>
+      </div>
     </div>
-    {% endfor %}
+  </div>
+  {% endfor %}
 </div>
 
 {% endblock %}
